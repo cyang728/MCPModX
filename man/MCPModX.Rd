@@ -10,7 +10,7 @@ MCPModX(
   gauss_models = Mods(linear = NULL, emax = c(0.05, 0.2, 0.5), quadratic = -0.85, doses =
     unique(data$dose)),
   alpha = 0.05,
-  bnds = c(0, 0.2)
+  bnds = c(0, 2)
 )
 }
 \arguments{
