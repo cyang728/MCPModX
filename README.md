@@ -11,7 +11,7 @@ The goal of MCPModX is to ...
 You can install the development version of MCPModX like so:
 
 ``` r
-# FILL THIS IN! HOW CAN PEOPLE INSTALL YOUR DEV PACKAGE?
+remotes::install_github("cyang728/MCPModX")
 ```
 
 ## Example
