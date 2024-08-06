@@ -3,6 +3,7 @@
 
 ## usethis namespace: start
 #' @importFrom DoseFinding fitMod
+#' @importFrom DoseFinding gAIC
 #' @importFrom DoseFinding Mods
 #' @importFrom DoseFinding mvtnorm.control
 #' @importFrom DoseFinding optContr
