@@ -20,7 +20,7 @@ MCPModX <- function(data,
                     gauss_models = Mods(linear = NULL, emax = c(0.05, 0.20, 0.50), quadratic = -0.85,
                                         doses = unique(data$dose)),
                     alpha = 0.05,
-                    bnds = c(0, 0.2)) {
+                    bnds = c(0, 2)) {
 
   # Ensure data contains 'dose' and 'y'
   if (!all(c("dose", "y") %in% colnames(data))) {
