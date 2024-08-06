@@ -19,8 +19,3 @@ A numeric vector of mean response estimates (\code{mu_hat}) for each dose level.
 This function computes the mean response estimates (\code{mu_hat}) for each dose level using a fitted GLM object.
 The input data must contain a \code{dose} column.
 }
-\examples{
-# Example usage:
-# Assuming `data` is your dataset and `anovaMod` is a fitted glm object.
-# mu_hat <- calculate_gc_muhat(data, anovaMod)
-}

@@ -18,5 +18,6 @@ This function computes the partial derivatives of the log odds ratio (log OR) fo
 \examples{
 # Example usage:
 # Assuming `mu_hat` is a vector of probabilities
+# mu_hat = c(0.01, 0.2, 0.4, 0.7)
 # partial_derivatives <- calculate_partial_logOR(mu_hat)
 }

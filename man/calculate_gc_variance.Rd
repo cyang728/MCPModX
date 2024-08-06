@@ -19,8 +19,3 @@ A variance-covariance matrix.
 This function computes the variance of model-assisted estimates for binary outcomes.
 The input data must contain columns \code{dose} and \code{y} (the binary outcome).
 }
-\examples{
-# Example usage:
-# Assuming `data` is your dataset and `anovaMod` is a fitted glm object.
-# S <- calculate_gc_variance(data, anovaMod)
-}
