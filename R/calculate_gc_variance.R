@@ -10,10 +10,6 @@
 #' @return A variance-covariance matrix.
 #' @export
 #'
-#' @examples
-#' # Example usage:
-#' # Assuming `data` is your dataset and `anovaMod` is a fitted glm object.
-#' # S <- calculate_gc_variance(data, anovaMod)
 calculate_gc_variance <- function(data, glm_obj) {
 
   # Ensure the necessary columns are present

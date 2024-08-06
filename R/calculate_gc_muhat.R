@@ -10,10 +10,6 @@
 #' @return A numeric vector of mean response estimates (`mu_hat`) for each dose level.
 #' @export
 #'
-#' @examples
-#' # Example usage:
-#' # Assuming `data` is your dataset and `anovaMod` is a fitted glm object.
-#' # mu_hat <- calculate_gc_muhat(data, anovaMod)
 calculate_gc_muhat <- function(data, glm_obj) {
 
   # Ensure the necessary column is present
