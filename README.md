@@ -2,6 +2,7 @@
 # MCPModX
 
 <!-- badges: start -->
+[![R-CMD-check](https://github.com/cyang728/MCPModX/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/cyang728/MCPModX/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
 The goal of MCPModX is to ...
