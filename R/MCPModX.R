@@ -114,5 +114,5 @@ MCPModX <- function(data,
   gfitted_aic = rowSums(sapply(1:length(fitting_models), function(i) exp(-aics[i] / 2) * fitted_values[, i])) / sum(exp(-aics / 2))
 
   return(list(test_significant = test_significant,
-              gfitted_aic = gfitted_aic))
+              weighted_logOR = gfitted_aic))
 }
