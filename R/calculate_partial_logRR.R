@@ -31,7 +31,7 @@ calculate_partial_logRR <- function(mu) {
   diag(contr_vec) <- 1 / mu[-1]
 
   # Combine the first row with the contrast vector matrix
-  contr_vec <- rbind(firstrow, contr_vec)
+  contr_vec <- cbind(firstrow, contr_vec)
 
   return(contr_vec)
 }
