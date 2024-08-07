@@ -1,6 +1,6 @@
 #' MCPModX: Modified MCPMod for Binary Outcomes with Covariates
 #'
-#' This function performs MCPMod analysis for binary outcomes, optionally adjusting for covariates.
+#' This function performs MCPMod analysis with model-assisted variance for generalized outcomes such as binary and count.
 #'
 #' @param data A data frame containing the variables `dose`, `y`, and any covariates specified.
 #' @param family A family for generalized linear model with different outcomes
