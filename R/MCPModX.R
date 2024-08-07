@@ -5,6 +5,9 @@
 #' @param data A data frame containing the variables `dose`, `y`, and any covariates specified.
 #' @param covariates A character vector of covariate names to include in the model. Default is "x_star".
 #' @param gauss_models A list of models for the dose-response relationship. Default includes linear, emax, and quadratic models.
+#' @param estimand A character string specifying the type of measure to estimate.
+#'        Options are "logOR" (log Odds Ratio), "RD" (Risk Difference), and "logRR" (log Risk Ratio).
+#'        Default is "logOR".
 #' @param alpha Significance level for the test. Default is 0.05.
 #' @param bnds A numeric vector specifying the bounds for the optimization. Default is c(0, 0.2).
 #'
