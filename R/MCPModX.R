@@ -31,6 +31,9 @@ MCPModX <- function(data,
     stop("Data must contain 'dose' and 'y' columns.")
   }
 
+  # Extract unique doses
+  doses <- unique(data$dose)
+
   # Check that placebo (dose = 0) is included
   if (min(doses) != 0) {
     stop("Data must include a placebo group with dose set to 0.")
@@ -38,9 +41,6 @@ MCPModX <- function(data,
 
   # Ensure that the estimand is one of the allowed values
   estimand <- match.arg(estimand)
-
-  # Extract unique doses
-  doses <- unique(data$dose)
 
   # Construct formula based on whether covariates are used
   if (!is.null(covariates)) {
