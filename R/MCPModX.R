@@ -3,6 +3,7 @@
 #' This function performs MCPMod analysis for binary outcomes, optionally adjusting for covariates.
 #'
 #' @param data A data frame containing the variables `dose`, `y`, and any covariates specified.
+#' @param family A family for generalized linear model with different outcomes
 #' @param covariates A character vector of covariate names to include in the model. Default is "x_star".
 #' @param gauss_models A list of models for the dose-response relationship. Default includes linear, emax, and quadratic models.
 #' @param estimand A character string specifying the type of measure to estimate.
@@ -20,6 +21,7 @@
 #' # result <- MCPModX(data = dat, covariates = "x_star")
 MCPModX <- function(data,
                     covariates = "x_star",
+                    family = binomial(link = "logit"),
                     gauss_models = Mods(linear = NULL, emax = c(0.05, 0.20, 0.50), quadratic = -0.85,
                                         doses = unique(data$dose)),
                     estimand = c("logOR", "RD", "logRR"),
@@ -51,7 +53,7 @@ MCPModX <- function(data,
   formula <- as.formula(formula_str)
 
   # Fit the generalized linear model
-  anovaMod <- glm(formula = formula, data = data, family = binomial(link = logit))
+  anovaMod <- glm(formula = formula, data = data, family = family)
 
   # Estimate the response means
   muhat <- calculate_gc_muhat(data = data, glm_obj = anovaMod)

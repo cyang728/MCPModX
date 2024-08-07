@@ -7,6 +7,7 @@
 MCPModX(
   data,
   covariates = "x_star",
+  family = binomial(link = "logit"),
   gauss_models = Mods(linear = NULL, emax = c(0.05, 0.2, 0.5), quadratic = -0.85, doses =
     unique(data$dose)),
   estimand = c("logOR", "RD", "logRR"),
@@ -18,6 +19,8 @@ MCPModX(
 \item{data}{A data frame containing the variables \code{dose}, \code{y}, and any covariates specified.}
 
 \item{covariates}{A character vector of covariate names to include in the model. Default is "x_star".}
+
+\item{family}{A family for generalized linear model with different outcomes}
 
 \item{gauss_models}{A list of models for the dose-response relationship. Default includes linear, emax, and quadratic models.}
 
