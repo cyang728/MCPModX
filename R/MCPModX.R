@@ -73,7 +73,7 @@ MCPModX <- function(data,
   doses_power <- doses[-1]
 
   # Check if the determinant of S is near zero and adjust accordingly
-  if (det(S) <= 1e-10) {
+  if (det(S) <= 1e-20) {
     stop("determinant of adjusted covariance is singular.")
   } else {
     contMat <- optContr(gauss_models, doses_power, S = S, placAdj = TRUE)$contMat
