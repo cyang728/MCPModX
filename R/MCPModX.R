@@ -57,7 +57,12 @@ MCPModX <- function(data,
   muhat <- calculate_gc_muhat(data = data, glm_obj = anovaMod)
 
   # Compute log odds ratios
-  thetahat <- sapply(2:length(doses), function(i) calculate_logOR(muhat[i], muhat[1]))
+  thetahat <- sapply(2:length(doses), function(i) {
+    switch(estimand,
+           logOR = calculate_logOR(muhat[i], muhat[1]),
+           logRR = calculate_logRR(muhat[i], muhat[1]),
+           RD = calculate_RD(muhat[i], muhat[1]))
+  })
 
   # Calculate partial derivatives and variance
   vrhat <- calculate_gc_variance(data = data, glm_obj = anovaMod)
@@ -73,7 +78,7 @@ MCPModX <- function(data,
   doses_power <- doses[-1]
 
   # Check if the determinant of S is near zero and adjust accordingly
-  if (det(S) <= 1e-20) {
+  if (det(S) <= 1e-30) {
     stop("determinant of adjusted covariance is singular.")
   } else {
     contMat <- optContr(gauss_models, doses_power, S = S, placAdj = TRUE)$contMat
