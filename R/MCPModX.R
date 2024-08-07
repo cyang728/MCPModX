@@ -19,6 +19,7 @@ MCPModX <- function(data,
                     covariates = "x_star",
                     gauss_models = Mods(linear = NULL, emax = c(0.05, 0.20, 0.50), quadratic = -0.85,
                                         doses = unique(data$dose)),
+                    estimand = c("logOR", "RD", "logRR"),
                     alpha = 0.05,
                     bnds = c(0, 2)) {
 
@@ -27,13 +28,16 @@ MCPModX <- function(data,
     stop("Data must contain 'dose' and 'y' columns.")
   }
 
-  # Extract unique doses
-  doses <- unique(data$dose)
-
   # Check that placebo (dose = 0) is included
   if (min(doses) != 0) {
     stop("Data must include a placebo group with dose set to 0.")
   }
+
+  # Ensure that the estimand is one of the allowed values
+  estimand <- match.arg(estimand)
+
+  # Extract unique doses
+  doses <- unique(data$dose)
 
   # Construct formula based on whether covariates are used
   if (!is.null(covariates)) {
@@ -53,9 +57,8 @@ MCPModX <- function(data,
   thetahat <- sapply(2:length(doses), function(i) calculate_logOR(muhat[i], muhat[1]))
 
   # Calculate partial derivatives and variance
-  partial_f <- calculate_partial_logOR(mu = muhat)
   vrhat <- calculate_gc_variance(data = data, glm_obj = anovaMod)
-  S <- partial_f %*% vrhat %*% t(partial_f)
+  S <- calculate_variance_estimate(mu = muhat, vr = vrhat, estimate = estimand)
 
   # Adjust variance-covariance matrix if no covariates are used
   if (is.null(covariates)) {
