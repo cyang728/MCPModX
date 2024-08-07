@@ -5,7 +5,7 @@
 [![R-CMD-check](https://github.com/cyang728/MCPModX/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/cyang728/MCPModX/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
-The goal of MCPModX is to incorporate covariate adjustment to enhance the robustness and precision of dose-response analyses. Our approach leverages g-computation to address non-collapsibility and employs model-assisted estimation to ensure valid inferences, even in the presence of model misspecification.
+The goal of MCPModX package is to incorporate covariate adjustment to enhance the robustness and precision of dose-response analyses. Our approach leverages g-computation to address non-collapsibility and employs model-assisted estimation to ensure valid inferences, even in the presence of model misspecification.
 
 ## Installation
 
