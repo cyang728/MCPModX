@@ -4,11 +4,7 @@
 \alias{calculate_variance_estimate}
 \title{Calculate Variance Estimate for Different Measures}
 \usage{
-calculate_variance_estimate(
-  mu = muhat,
-  vr = vrhat,
-  estimate = c("logOR", "RD", "logRR")
-)
+calculate_variance_estimate(mu, vr, estimate = c("logOR", "RD", "logRR"))
 }
 \arguments{
 \item{mu}{A numeric vector of probabilities (e.g., \code{mu_hat} values) for each dose level.}
