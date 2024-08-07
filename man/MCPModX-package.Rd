@@ -16,7 +16,7 @@ Useful links:
 
 }
 \author{
-\strong{Maintainer}: Cheng-Han Yang \email{cheng.han.yang@uth.tmc.edu} (\href{https://orcid.org/YOUR-ORCID-ID}{ORCID})
+\strong{Maintainer}: Cheng-Han Yang \email{cheng.han.yang@uth.tmc.edu} (\href{https://orcid.org/0000-0002-4161-3140}{ORCID})
 
 }
 \keyword{internal}

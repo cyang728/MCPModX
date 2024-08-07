@@ -17,7 +17,7 @@
 #' muhat <- c(0.2, 0.5, 0.8)
 #' vrhat <- diag(3)  # Example variance-covariance matrix
 #' calculate_variance_estimate(mu = muhat, vr = vrhat, estimate = "logOR")
-calculate_variance_estimate <- function(mu = muhat, vr = vrhat,
+calculate_variance_estimate <- function(mu, vr,
                                         estimate = c("logOR", "RD", "logRR")) {
 
   # Ensure that the estimate is one of the allowed values

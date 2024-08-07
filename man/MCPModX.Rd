@@ -9,6 +9,7 @@ MCPModX(
   covariates = "x_star",
   gauss_models = Mods(linear = NULL, emax = c(0.05, 0.2, 0.5), quadratic = -0.85, doses =
     unique(data$dose)),
+  estimand = c("logOR", "RD", "logRR"),
   alpha = 0.05,
   bnds = c(0, 2)
 )
@@ -19,6 +20,10 @@ MCPModX(
 \item{covariates}{A character vector of covariate names to include in the model. Default is "x_star".}
 
 \item{gauss_models}{A list of models for the dose-response relationship. Default includes linear, emax, and quadratic models.}
+
+\item{estimand}{A character string specifying the type of measure to estimate.
+Options are "logOR" (log Odds Ratio), "RD" (Risk Difference), and "logRR" (log Risk Ratio).
+Default is "logOR".}
 
 \item{alpha}{Significance level for the test. Default is 0.05.}
 
