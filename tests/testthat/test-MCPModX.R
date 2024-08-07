@@ -18,7 +18,7 @@ test_that("MCPModX runs without errors for standard input", {
   expect_type(result, "list")
 
   # Check that the list contains expected elements
-  expect_true("test_significant" %in% names(result))
+  expect_true("MCT_table" %in% names(result))
   expect_true("weighted_estimand" %in% names(result))
 })
 
