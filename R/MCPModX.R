@@ -105,8 +105,11 @@ MCPModX <- function(data,
                    interval = ctrl$interval)
 
   # Determine significant tests
-  tmp <- which(tStat > crtl_val$quantile)
-  test_significant <- ifelse(length(tmp) == 0, 0, tmp)
+  MCT_table = matrix(NA, nrow = length(tStat), ncol = 2)
+  rownames(MCT_table) = names(tStat)
+  colnames(MCT_table) = c("t-Stat", "Significance")
+  MCT_table[,1] = tStat
+  MCT_table[,2] = as.numeric(tStat > crtl_val$quantile)
 
   # Fit models and calculate generalized weighted AIC
   fitting_models <- lapply(seq_along(gauss_models), function(i_model) {
@@ -126,6 +129,6 @@ MCPModX <- function(data,
   fitted_values = sapply(fitting_models, function(model) predict(model, se.fit = FALSE, doseSeq = doses[-1], predType = "effect-curve"))
   gfitted_aic = rowSums(sapply(1:length(fitting_models), function(i) exp(-aics[i] / 2) * fitted_values[, i])) / sum(exp(-aics / 2))
 
-  return(list(test_significant = test_significant,
+  return(list(MCT_table = MCT_table,
               weighted_estimand = gfitted_aic))
 }
