@@ -86,7 +86,7 @@ results = MCPModX(data = dat_cur,
 results$test_significant
 
 # Predicted log odds ratio using weighted AIC
-results$weighted_logOR
+results$weighted_estimand
 ```
 
 ### 2. Power and Prediction in MCPMod with Prognostic Score for Binary Endpoints. 
@@ -197,7 +197,7 @@ results = MCPModX(data = dat_cur,
 results$test_significant
 
 # Predicted log odds ratio using weighted AIC
-results$weighted_logOR
+results$weighted_estimand
 ```
 
 

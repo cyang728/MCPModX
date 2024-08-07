@@ -22,7 +22,7 @@ calculate_partial_logRR <- function(mu) {
   ndoses <- length(mu)
 
   # First row of the derivative matrix
-  firstrow <- matrix(rep(-1 / mu[1], ndoses - 1), nrow = 1)
+  firstrow <- matrix(rep(-1 / mu[1], ndoses - 1), ndoses - 1)
 
   # Initialize the contrast vector matrix
   contr_vec <- matrix(0, nrow = ndoses - 1, ncol = ndoses - 1)
