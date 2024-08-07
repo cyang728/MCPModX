@@ -83,7 +83,7 @@ results = MCPModX(data = dat_cur,
                   covariates = c("x1", "x2", "x3", "x4"))
 
 # Significance of the shape in the MCP Step
-results$test_significant
+results$MCT_table
 
 # Predicted log odds ratio using weighted AIC
 results$weighted_estimand
@@ -194,7 +194,7 @@ results = MCPModX(data = dat_cur,
                   covariates = c("x_star"))
 
 # Significance of the shape in the MCP Step
-results$test_significant
+results$MCT_table
 
 # Predicted log odds ratio using weighted AIC
 results$weighted_estimand
