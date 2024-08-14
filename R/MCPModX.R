@@ -130,5 +130,6 @@ MCPModX <- function(data,
   gfitted_aic = rowSums(sapply(1:length(fitting_models), function(i) exp(-aics[i] / 2) * fitted_values[, i])) / sum(exp(-aics / 2))
 
   return(list(MCT_table = MCT_table,
-              weighted_estimand = gfitted_aic))
+              weighted_estimand = gfitted_aic,
+              estimand = "estimand"))
 }
