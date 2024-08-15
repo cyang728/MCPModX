@@ -8,6 +8,7 @@
 #' @importFrom DoseFinding Mods
 #' @importFrom DoseFinding mvtnorm.control
 #' @importFrom DoseFinding optContr
+#' @importFrom DoseFinding MCTpval
 #' @importFrom MASS ginv
 #' @importFrom mvtnorm qmvt
 #' @importFrom stats as.formula

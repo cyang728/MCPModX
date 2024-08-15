@@ -107,9 +107,14 @@ MCPModX <- function(data,
   # Determine significant tests
   MCT_table = matrix(NA, nrow = length(tStat), ncol = 2)
   rownames(MCT_table) = names(tStat)
-  colnames(MCT_table) = c("t-Stat", "Significance")
+  colnames(MCT_table) = c("t-Stat", "p-value")
   MCT_table[,1] = tStat
-  MCT_table[,2] = as.numeric(tStat > crtl_val$quantile)
+  MCT_table[,2] = MCTpval(contMat,
+                          corMat,
+                          df = anovaMod$df.residual,
+                          tStat,
+                          alternative = "one.sided",
+                          control = mvtnorm.control())
 
   # Fit models and calculate generalized weighted AIC
   fitting_models <- lapply(seq_along(gauss_models), function(i_model) {
