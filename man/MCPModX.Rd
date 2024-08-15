@@ -36,7 +36,7 @@ Default is "logOR".}
 A list containing the significant tests and the generalized weighted AIC fitted values.
 }
 \description{
-This function performs MCPMod analysis for binary outcomes, optionally adjusting for covariates.
+This function performs MCPMod analysis with model-assisted variance for generalized outcomes such as binary and count.
 }
 \examples{
 # Example usage:
