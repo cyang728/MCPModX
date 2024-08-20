@@ -136,5 +136,5 @@ MCPModX <- function(data,
 
   return(list(MCT_table = MCT_table,
               weighted_estimand = gfitted_aic,
-              estimand = "estimand"))
+              estimand = estimand))
 }
