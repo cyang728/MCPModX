@@ -34,7 +34,7 @@ MCPModX <- function(data,
   }
 
   # Extract unique doses
-  doses <- unique(data$dose)
+  doses <- unique(sort(data$dose))
 
   # Check that placebo (dose = 0) is included
   if (min(doses) != 0) {
@@ -135,6 +135,7 @@ MCPModX <- function(data,
   gfitted_aic = rowSums(sapply(1:length(fitting_models), function(i) exp(-aics[i] / 2) * fitted_values[, i])) / sum(exp(-aics / 2))
 
   return(list(MCT_table = MCT_table,
+              mu_hat = muhat,
               weighted_estimand = gfitted_aic,
               estimand = estimand))
 }
