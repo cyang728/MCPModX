@@ -45,7 +45,9 @@ MCPModX <- function(data,
   estimand <- match.arg(estimand)
 
   # Construct formula based on whether covariates are used
-  if (!is.null(covariates) || covariates == 1 || covariates == "1" ) {
+  if(covariates == 1 || covariates == "1") covariates = NULL
+
+  if (!is.null(covariates)) {
     formula_str <- paste("y ~ factor(dose) +", paste(covariates, collapse = "+"))
   } else {
     formula_str <- "y ~ factor(dose)"
