@@ -1,0 +1,30 @@
+Package: MCPModX
+Type: Package
+Title: MCP-Mod with Model-Assisted Covariate Adjustment under Missing Outcomes
+Version: 0.1.0
+Authors@R: c(
+    person("Cheng-Han", "Yang", role = c("aut", "cre"),
+           email = "bingo82728@gmail.com"),
+    person("Ruitao", "Lin", role = "aut", email = "rlin@mdanderson.org"))
+Description: An extension of the Multiple Comparison Procedure and Modelling
+    (MCP-Mod) methodology for dose-finding that performs model-assisted
+    covariate adjustment and accommodates missing outcomes that are missing at
+    random. Marginal arm means are estimated by inverse-probability-weighted
+    g-computation / augmented inverse-probability weighting (AIPW); inference
+    uses the stacked M-estimation (sandwich) covariance that accounts for
+    estimation of the observation- and outcome-model nuisance parameters
+    (Theorem 3.3). Supports the optimal-contrast MCP testing step with a
+    multiplicity-adjusted critical value and the generalised-AIC model-averaging
+    Mod step. Continuous (identity link) and binary (logit link) outcomes are
+    supported; for binary outcomes the target estimand is the marginal
+    placebo-adjusted log-odds dose-response curve.
+License: GPL (>= 3)
+URL: https://github.com/cyang728/MCPModX
+BugReports: https://github.com/cyang728/MCPModX/issues
+Encoding: UTF-8
+LazyData: true
+Depends: R (>= 4.0)
+Imports: stats, mvtnorm
+Suggests: testthat (>= 3.0.0), randomForest, MASS
+RoxygenNote: 7.3.3
+Config/testthat/edition: 3
