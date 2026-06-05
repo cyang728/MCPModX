@@ -249,9 +249,3 @@ need are:
 See [`../MCPModX_simulation/`](../MCPModX_simulation/) for the full simulation
 driver: data generation, all scenarios, the marginal-truth Monte-Carlo
 integration, and the parallel grid runner.
-
-## Testing
-
-```r
-devtools::test("MCPModX")    # requires the 'testthat' package
-```
