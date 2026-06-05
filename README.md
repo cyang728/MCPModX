@@ -1,3 +1,5 @@
+[![R-CMD-check](https://github.com/cyang728/MCPModX/actions/workflows/r.yml/badge.svg)](https://github.com/cyang728/MCPModX/actions/workflows/r.yml)
+
 # MCPModX
 
 **MCP-Mod with model-assisted covariate adjustment under missing outcomes.**
