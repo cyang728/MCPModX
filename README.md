@@ -2,250 +2,473 @@
 
 # MCPModX
 
-**MCP-Mod with model-assisted covariate adjustment under missing outcomes.**
+`MCPModX` is an R package for **Phase II dose-ranging trials**.
 
-The goal of `MCPModX` is to incorporate covariate adjustment to enhance the
-**robustness and precision** of dose-response analyses. The approach leverages
-**g-computation** to address non-collapsibility of the binary log-odds estimand
-and employs **model-assisted (augmented inverse-probability-weighted)
-estimation** to ensure valid inference even when the working outcome model is
-misspecified or when outcomes are **missing at random**. Inference uses the
-**stacked M-estimation (sandwich) covariance**, which accounts for the
-estimation of the observation- and outcome-model nuisance parameters
-(Theorem 3.3 of the manuscript) and remains valid under the heteroscedasticity
-intrinsic to binary outcomes.
+It extends the standard MCP-Mod framework to answer two practical questions that arise at the end of a dose-ranging study:
 
-## What it does
+1. **Is there evidence of a dose-response signal?**
+2. **What does the dose-response curve look like after accounting for baseline patient differences and missing outcomes?**
 
-| Stage | Implementation |
-|---|---|
-| **Estimand** | marginal placebo-adjusted dose-response curve `delta_a = link(mu_a) - link(mu_0)`; for binary outcomes the marginal **log-odds** (collapsibility-correct), for continuous outcomes the mean difference |
-| **Means** | IPW g-computation / AIPW: logistic observation model `p_hat`, IPW-weighted working outcome GLM, then standardization `mu_hat_a = mean_i m_hat_a(X_i)` |
-| **Variance** | stacked-sandwich `V` (default; consistent whether or not either working model is correct) or the oracle plug-in (eq. 3.20, for comparison) |
-| **MCP step** | optimal contrasts `c_m = Sigma^{-1} delta_m^0`, multiplicity-adjusted critical value from the joint normal (`mvtnorm::qmvnorm`) |
-| **Mod step** | GLS fit of linear / Emax / quadratic shapes with generalised-AIC model averaging |
+The package is designed for randomized trials with placebo and multiple active doses. It is especially useful when the endpoint is binary or non-normal, when important baseline covariates are available, or when some outcomes are missing.
 
-When there is no missingness the estimator reduces to complete-data
-g-computation; when `covariates = NULL` it reduces to the unadjusted
-(generalised MCP-Mod) analysis.
+---
 
-## Installation
+## 🧭 Contents
 
-You can install the development version of `MCPModX` like so:
+* [🎯 Clinical target](#clinical-target)
+* [❓ Why this package is needed](#why-this-package-is-needed)
+* [⚙️ What MCPModX does](#what-mcpmodx-does)
+* [✅ When to use MCPModX](#when-to-use-mcpmodx)
+* [⚠️ When not to use MCPModX](#when-not-to-use-mcpmodx)
+* [📦 Installation](#installation)
+* [🚀 Quick start](#quick-start)
+* [🔎 Interpreting the output](#interpreting-the-output)
+* [🧪 Example: no missing outcomes](#example-no-missing-outcomes)
+* [📊 Example: unadjusted analysis](#example-unadjusted-analysis)
+* [🧬 Example: using a prognostic score](#example-using-a-prognostic-score)
+* [🧾 Data format](#data-format)
+* [📈 Choosing candidate dose-response shapes](#choosing-candidate-dose-response-shapes)
+* [🧱 Main assumptions](#main-assumptions)
+* [🧠 Technical summary for statisticians](#technical-summary-for-statisticians)
+* [📚 Citation](#citation)
+
+---
+
+<a id="clinical-target"></a>
+
+## 🎯 Clinical target
+
+The target of `MCPModX` is the **population-average dose-response curve** in the trial population.
+
+For each dose `a`, the package estimates:
+
+```text
+mu_a = average outcome if every patient in the trial population received dose a
+```
+
+This means:
+
+* For a **binary endpoint**, `mu_a` is the response probability at dose `a`.
+* For a **continuous endpoint**, `mu_a` is the mean outcome at dose `a`.
+
+The treatment effect at an active dose is then compared with placebo:
+
+```text
+delta_a = link(mu_a) - link(mu_0)
+```
+
+where `mu_0` is the placebo response.
+
+For a binary endpoint with a logit link, this is a **marginal log-odds contrast versus placebo**. Importantly, this is not just the coefficient of dose from a logistic regression. It is the dose-response curve after averaging over the baseline covariate distribution of the trial population.
+
+This is the curve used for both:
+
+* the **proof-of-concept test**, and
+* the **dose-response modeling / dose-selection step**.
+
+---
+
+<a id="why-this-package-is-needed"></a>
+
+## ❓ Why this package is needed
+
+Standard generalized MCP-Mod is useful for dose-ranging trials, but two common features of real trials are not fully addressed.
+
+### 1. Baseline covariates are often prognostic
+
+Patients may differ in baseline disease severity, biomarkers, demographics, or other pretreatment variables. These variables can strongly predict the outcome.
+
+Ignoring them can reduce power and make the estimated dose-response curve less precise.
+
+`MCPModX` uses baseline covariates to improve precision while still targeting the population-average dose-response curve.
+
+### 2. Outcomes may be missing
+
+In Phase II studies, some outcomes may be missing because of dropout, non-adherence, delayed follow-up, or administrative reasons.
+
+A complete-case analysis can lose information and may be biased when missingness is related to observed patient characteristics.
+
+`MCPModX` can incorporate a model for the probability that an outcome is observed, so that the dose-response analysis remains valid under a missing-at-random assumption.
+
+---
+
+<a id="what-mcpmodx-does"></a>
+
+## ⚙️ What MCPModX does
+
+At a high level, the package performs three steps.
+
+### Step 1. Estimate the adjusted response at each dose
+
+The package estimates the average response at each dose after adjusting for baseline covariates.
+
+For a binary endpoint, this means estimating the adjusted response probability for placebo and each active dose.
+
+### Step 2. Test for a dose-response signal
+
+The package performs the MCP step of MCP-Mod.
+
+It compares the observed dose-response pattern with several prespecified candidate shapes, such as:
+
+* linear,
+* Emax,
+* quadratic.
+
+The result is a multiplicity-adjusted test of whether there is any evidence of a non-flat dose-response relationship.
+
+### Step 3. Estimate the dose-response curve
+
+If there is evidence of a dose-response signal, the package performs the Mod step.
+
+It fits or averages candidate dose-response shapes to estimate the placebo-adjusted dose-response curve.
+
+---
+
+<a id="when-to-use-mcpmodx"></a>
+
+## ✅ When to use MCPModX
+
+`MCPModX` is appropriate when you have:
+
+* a randomized Phase II dose-ranging trial,
+* placebo and multiple active doses,
+* a binary or continuous endpoint,
+* baseline covariates measured before treatment,
+* possible missing outcomes coded as `NA`,
+* prespecified candidate dose-response shapes.
+
+The package is most useful when some baseline covariates are expected to be prognostic, such as baseline disease severity, prior treatment history, risk score, biomarker status, or an externally trained prognostic score.
+
+---
+
+<a id="when-not-to-use-mcpmodx"></a>
+
+## ⚠️ When not to use MCPModX
+
+`MCPModX` is not intended to solve every dose-finding problem.
+
+It is not a substitute for:
+
+* a design for non-randomized observational data,
+* a sensitivity analysis for missing-not-at-random outcomes,
+* a full utility-based benefit-risk dose optimization method,
+* an adaptive dose-escalation design,
+* a method for selecting candidate dose-response shapes after looking at the data.
+
+Candidate dose-response shapes should be chosen before the analysis based on clinical and pharmacologic knowledge.
+
+---
+
+<a id="installation"></a>
+
+## 📦 Installation
+
+You can install the development version from GitHub:
 
 ```r
 # install.packages("remotes")
 remotes::install_github("cyang728/MCPModX")
 ```
 
-or, from a local copy of the package directory:
+Then load the package:
 
 ```r
-install.packages("mvtnorm")
-R CMD INSTALL MCPModX        # or devtools::install("MCPModX")
+library(MCPModX)
 ```
 
-The package depends only on `stats` and `mvtnorm`; `randomForest` and `MASS`
-are used only by the examples below.
+If you see a GitHub authentication error such as `HTTP error 401: Bad credentials`, the problem is usually an expired GitHub token on your machine, not the package itself. For a public repository, you can try:
 
-## Example 1 — Covariate adjustment for a binary endpoint
+```r
+remotes::install_github("cyang728/MCPModX", auth_token = NULL)
+```
 
-This is a basic example showing how MCP-ModX uses key prognostic covariates to
-sharpen the dose-response test for a binary outcome.
+---
+
+<a id="quick-start"></a>
+
+## 🚀 Quick start
+
+The package includes a small simulated dose-ranging dataset called `sim_dat`.
 
 ```r
 library(MCPModX)
 
-## Function for generating correlated covariates
-gen_norm = function(n = 1000, p1 = 10, rho = 0.3) {
-  X = matrix(0, nrow = n, ncol = p1)
-  X[, 1] = rnorm(n)
-  for (j in 2:p1) X[, j] = rho * X[, j - 1] + sqrt(1 - rho^2) * rnorm(n)
-  X
-}
-
-# Effect of the covariates on the outcome
-custom_fX    = function(X)    1 * X[, 1] - 2.1 * X[, 2] + 0.5 * X[, 3] + 0.2 * X[, 4]
-# Treatment effect as a function of dose
-custom_fDose = function(dose) 2 * dose
-
-# Generate a trial data set given a dose vector
-gen_dat_trial = function(dose, p = 10, seed = 100, rho = 0.3,
-                         fX_func = custom_fX, fDose_func = custom_fDose) {
-  set.seed(seed)
-  n  = length(dose)
-  X  = gen_norm(n = n, p1 = p, rho = rho)
-  lp = fX_func(X) + fDose_func(dose)
-  y  = rbinom(n, size = 1, prob = plogis(lp))
-  dat = data.frame(X = X, dose = dose, y = y)
-  colnames(dat)[1:p] = paste0("x", seq(p))
-  dat
-}
-
-# Generate the current trial: 6 doses, 30 patients per arm
-n_dose  = 30
-dose    = rep(c(0.00, 0.05, 0.20, 0.40, 0.70, 1.00), each = n_dose)
-dat_cur = gen_dat_trial(dose, seed = 1)
-
-# Candidate dose-response shapes (guesstimates on the standardized dose scale)
-models = list(linear = NULL, emax = c(0.05, 0.20, 0.50), quadratic = -0.85)
-
-# Apply the MCP-ModX analysis, adjusting for the prognostic covariates
-fit = MCPModX(data       = dat_cur,
-              outcome    = "y",
-              dose       = "dose",
-              models     = models,
-              covariates = c("x1", "x2", "x3", "x4"),
-              family     = binomial())
-
-fit                         # one-line summary: significance, best shape, weights
-
-# Significance of each candidate shape in the MCP step
-fit$mcp$tstat               # optimal-contrast statistics (one per shape)
-fit$mcp$crit                # multiplicity-adjusted critical value
-fit$mcp$reject              # 1 if a dose-response signal is detected
-
-# Predicted placebo-adjusted log-odds curve via gAIC model averaging
-fit$mod$curve               # averaged contrasts on the active doses
-fit$mod$weights             # gAIC model-averaging weights
-```
-
-## Example 2 — Prognostic score from historical data (random forest)
-
-Here we assume **historical data** are available to train a prognostic score
-with a nonlinear machine-learning method (a random forest) on the binary
-outcome. The trained model is applied to the current trial to produce a single
-strong covariate `x_star`, which is then passed to `MCPModX`.
-
-```r
-library(MCPModX)
-library(randomForest)
-
-gen_norm = function(n = 1000, p1 = 10, rho = 0.3) {
-  X = matrix(0, nrow = n, ncol = p1)
-  X[, 1] = rnorm(n)
-  for (j in 2:p1) X[, j] = rho * X[, j - 1] + sqrt(1 - rho^2) * rnorm(n)
-  X
-}
-hist_fX      = function(X)    1 * X[, 1] - 2.1 * X[, 2] + 0.5 * X[, 3] + 0.2 * X[, 4]
-custom_fX    = function(X)    1 * X[, 1] - 2.1 * X[, 2] + 0.5 * X[, 3] + 0.2 * X[, 4]
-custom_fDose = function(dose) 2 * dose
-
-# Historical data -> train a random forest prognostic model
-gen_dat_hist = function(n = 1000, p_hist = 10, seed = 100, rf_col = 1:10,
-                        n_tree = 1000, rho = 0.3, fX_func = hist_fX) {
-  set.seed(seed)
-  X = gen_norm(n = n, p1 = p_hist, rho = rho)
-  y = rbinom(n, size = 1, prob = plogis(fX_func(X)))
-  dat = data.frame(X = X, y = y)
-  colnames(dat)[1:p_hist] = paste0("x", seq(p_hist))
-  rf = randomForest(dat[, rf_col], factor(dat[, p_hist + 1]), ntree = n_tree)
-  list(dat = dat, rf = rf)
-}
-
-gen_dat_trial = function(dose, p = 10, seed = 100, rho = 0.3,
-                         fX_func = custom_fX, fDose_func = custom_fDose) {
-  set.seed(seed)
-  n  = length(dose)
-  X  = gen_norm(n = n, p1 = p, rho = rho)
-  y  = rbinom(n, size = 1, prob = plogis(fX_func(X) + fDose_func(dose)))
-  dat = data.frame(X = X, dose = dose, y = y)
-  colnames(dat)[1:p] = paste0("x", seq(p))
-  dat
-}
-
-# Train the prognostic model on historical data
-dat_hist = gen_dat_hist(n = 1000, rf_col = 1:10, seed = 1)
-
-# Current trial, then score it with the historical random forest
-n_dose  = 30
-dose    = rep(c(0.00, 0.05, 0.20, 0.40, 0.70, 1.00), each = n_dose)
-dat_cur = gen_dat_trial(dose, seed = 1)
-
-x_star  = predict(dat_hist$rf, newdata = dat_cur, type = "prob")[, 2]
-x_star  = pmax(pmin(x_star, 0.999), 0.001)          # avoid 0/1
-x_star  = scale(qlogis(x_star))                     # logit, then standardize
-dat_cur = data.frame(x_star = x_star, dat_cur)
-
-# A single, strong prognostic covariate is often all that is needed
-models = list(linear = NULL, emax = c(0.05, 0.20, 0.50), quadratic = -0.85)
-fit = MCPModX(data       = dat_cur,
-              outcome    = "y",
-              dose       = "dose",
-              models     = models,
-              covariates = "x_star",
-              family     = binomial())
-
-fit$mcp$tstat               # significance of each shape in the MCP step
-fit$mod$curve               # predicted log-odds curve via weighted AIC
-```
-
-## Example 3 — Missing outcomes (inverse-probability weighting)
-
-The distinguishing feature of `MCPModX` is valid inference when outcomes are
-**missing at random**. Code missing responses as `NA` and supply
-`obs_covariates`, the covariates of the logistic observation (propensity)
-model; the analysis then uses IPW g-computation with the sandwich variance.
-
-```r
-library(MCPModX)
-
-# ... reuse gen_norm / custom_fX / custom_fDose / gen_dat_trial from Example 1
-dose    = rep(c(0.00, 0.05, 0.20, 0.40, 0.70, 1.00), each = 30)
-dat_cur = gen_dat_trial(dose, seed = 1)
-
-# Make outcomes missing at random: P(observed) depends on x1
-set.seed(1)
-p_obs = plogis(1.2 + 0.8 * dat_cur$x1)
-dat_cur$y[rbinom(nrow(dat_cur), 1, p_obs) == 0] = NA
-mean(is.na(dat_cur$y))      # ~ missing fraction
-
-models = list(linear = NULL, emax = c(0.05, 0.20, 0.50), quadratic = -0.85)
-
-# Complete-case generalized MCP-Mod (no adjustment) -- for comparison
-fit_cc  = MCPModX(dat_cur, "y", "dose", models, family = binomial())
-
-# MCP-ModX: outcome-model covariates + IPW observation model
-fit_ipw = MCPModX(dat_cur, "y", "dose", models,
-                  covariates     = c("x1", "x2", "x3", "x4"),  # outcome model
-                  obs_covariates = "x1",                       # IPW propensity
-                  family         = binomial(),
-                  variance       = "sandwich")                 # Theorem 3.3
-
-fit_ipw
-fit_ipw$mcp$tstat           # IPW-adjusted optimal-contrast statistics
-fit_ipw$delta               # placebo-adjusted contrasts (marginal log-odds)
-fit_ipw$Sigma_delta         # their stacked-sandwich covariance
-```
-
-## Built-in example data
-
-A small simulated trial with a binary outcome, three covariates, and ~21%
-missing responses ships with the package:
-
-```r
 data(sim_dat)
 str(sim_dat)
-MCPModX(sim_dat, "y", "dose",
-        models = list(linear = NULL, emax = c(0.05, 0.2), quadratic = -0.85),
-        covariates = c("x1", "x2", "x3"), obs_covariates = c("x1", "x2"))
 ```
 
-## The fitted object
+The dataset contains:
 
-`MCPModX()` returns an object of class `"MCPModX"`; the components most users
-need are:
+* `y`: binary outcome, with some missing values coded as `NA`,
+* `dose`: assigned dose,
+* `x1`, `x2`, `x3`: baseline covariates.
 
-| Component | Meaning |
-|---|---|
-| `fit$mcp` | MCP step: `tstat` (per-shape optimal-contrast statistics), `crit` (multiplicity-adjusted critical value), `reject`, `pvalue`, `best`, `zmax` |
-| `fit$mod` | Mod step: `curve` (gAIC-averaged placebo-adjusted dose-response), `weights`, `gaic` |
-| `fit$delta` | placebo-adjusted contrasts (marginal log-odds for binary, mean difference for continuous) |
-| `fit$Sigma_delta` | stacked-sandwich covariance of `fit$delta` |
-| `fit$mu` | marginal arm means |
+Define the candidate dose-response shapes:
 
-## Reproducing the manuscript simulations
+```r
+models <- list(
+  linear    = NULL,
+  emax      = c(0.05, 0.20),
+  quadratic = -0.85
+)
+```
 
-See [`../MCPModX_simulation/`](../MCPModX_simulation/) for the full simulation
-driver: data generation, all scenarios, the marginal-truth Monte-Carlo
-integration, and the parallel grid runner.
+Run MCP-ModX:
+
+```r
+fit <- MCPModX(
+  data           = sim_dat,
+  outcome        = "y",
+  dose           = "dose",
+  models         = models,
+  covariates     = c("x1", "x2", "x3"),
+  obs_covariates = c("x1", "x2"),
+  family         = binomial()
+)
+
+fit
+```
+
+In this example:
+
+* `covariates` are used to improve precision of the dose-response estimates.
+* `obs_covariates` are used to model the probability that the outcome is observed.
+* `family = binomial()` indicates a binary endpoint.
+
+---
+
+<a id="interpreting-the-output"></a>
+
+## 🔎 Interpreting the output
+
+The fitted object contains the main quantities needed for dose-response decision-making.
+
+```r
+fit$mcp$reject
+```
+
+Whether the global dose-response test rejects the flat null. A value of `TRUE` means there is evidence of a dose-response signal.
+
+```r
+fit$mcp$tstat
+fit$mcp$crit
+```
+
+The MCP test statistics for each candidate shape and the multiplicity-adjusted critical value.
+
+```r
+fit$mu
+```
+
+The adjusted marginal response estimate at each dose.
+
+For a binary endpoint, these are adjusted response probabilities.
+
+```r
+fit$delta
+```
+
+The placebo-adjusted treatment effects.
+
+For a binary endpoint with a logit link, these are marginal log-odds contrasts versus placebo.
+
+```r
+fit$mod$curve
+```
+
+The estimated placebo-adjusted dose-response curve from the Mod step.
+
+```r
+fit$mod$weights
+```
+
+The model-averaging weights assigned to the candidate dose-response shapes.
+
+---
+
+<a id="example-no-missing-outcomes"></a>
+
+## 🧪 Example: no missing outcomes
+
+When all outcomes are observed, you can omit `obs_covariates`.
+
+```r
+fit_complete <- MCPModX(
+  data       = sim_dat,
+  outcome    = "y",
+  dose       = "dose",
+  models     = models,
+  covariates = c("x1", "x2", "x3"),
+  family     = binomial()
+)
+```
+
+In this setting, `MCPModX` uses covariate adjustment to improve precision.
+
+---
+
+<a id="example-unadjusted-analysis"></a>
+
+## 📊 Example: unadjusted analysis
+
+To run a generalized MCP-Mod analysis without covariate adjustment, omit both `covariates` and `obs_covariates`.
+
+```r
+fit_unadjusted <- MCPModX(
+  data    = sim_dat,
+  outcome = "y",
+  dose    = "dose",
+  models  = models,
+  family  = binomial()
+)
+```
+
+This can be useful as a comparison with the adjusted analysis.
+
+---
+
+<a id="example-using-a-prognostic-score"></a>
+
+## 🧬 Example: using a prognostic score
+
+A prognostic score can be used as a single covariate if it was trained before the current trial analysis.
+
+For example, suppose `x_star` is a baseline risk score or predicted response score from historical or external data.
+
+```r
+fit_score <- MCPModX(
+  data       = sim_dat,
+  outcome    = "y",
+  dose       = "dose",
+  models     = models,
+  covariates = "x_star",
+  family     = binomial()
+)
+```
+
+This is often useful when many baseline variables are available but the final dose-response analysis should remain simple and interpretable.
+
+The prognostic score should be defined before analyzing the current trial outcome.
+
+---
+
+<a id="data-format"></a>
+
+## 🧾 Data format
+
+Your trial dataset should have one row per patient.
+
+| Column type            | Description                                                            |
+| ---------------------- | ---------------------------------------------------------------------- |
+| Outcome                | The clinical endpoint, such as response status or change from baseline |
+| Dose                   | The randomized dose assignment                                         |
+| Baseline covariates    | Pretreatment variables used for precision adjustment                   |
+| Observation covariates | Variables used to explain whether the outcome is observed              |
+
+Missing outcomes should be coded as `NA`.
+
+A typical dataset may look like this:
+
+```r
+head(sim_dat)
+```
+
+```text
+  y  dose    x1    x2    x3
+  1  0.00  ...
+  0  0.05  ...
+ NA  0.20  ...
+```
+
+Placebo should usually be coded as dose `0`. Active doses should be numeric and should be on the same scale used when specifying the candidate dose-response models.
+
+---
+
+<a id="choosing-candidate-dose-response-shapes"></a>
+
+## 📈 Choosing candidate dose-response shapes
+
+MCP-Mod requires candidate dose-response shapes to be specified before the analysis.
+
+For example:
+
+```r
+models <- list(
+  linear    = NULL,
+  emax      = c(0.05, 0.20, 0.50),
+  quadratic = -0.85
+)
+```
+
+These shapes represent clinically plausible ways the treatment effect may change with dose.
+
+The goal is not to know the true shape in advance. The goal is to include a reasonable set of possible shapes and then perform a multiplicity-adjusted test across them.
+
+---
+
+<a id="main-assumptions"></a>
+
+## 🧱 Main assumptions
+
+The analysis relies on the following assumptions.
+
+### Randomization
+
+Treatment assignment is randomized, so baseline covariates are not confounders of treatment assignment.
+
+### Prespecified candidate shapes
+
+The candidate dose-response shapes are chosen before looking at the outcome data.
+
+### Missing at random
+
+When outcomes are missing, the probability of observing the outcome may depend on observed variables such as dose and baseline covariates.
+
+However, after conditioning on these observed variables, missingness should not depend on the unobserved outcome itself.
+
+### Positivity
+
+Every patient should have a nonzero probability of having the outcome observed within the levels of the variables used in the observation model.
+
+---
+
+<a id="technical-summary-for-statisticians"></a>
+
+## 🧠 Technical summary for statisticians
+
+`MCPModX` estimates the vector of marginal mean responses across doses and then supplies the corresponding covariance matrix to the MCP and Mod steps.
+
+For each dose `a`, the target is:
+
+```text
+mu_a = E[Y(a)]
+```
+
+and the placebo-adjusted effect is:
+
+```text
+delta_a = g(mu_a) - g(mu_0)
+```
+
+where `g` is the link function.
+
+The estimator uses standardization over the empirical baseline covariate distribution. When outcomes are missing, the outcome model is fitted with inverse-probability weights from an observation model. The resulting estimator targets the marginal dose-response curve and can be interpreted as an augmented inverse-probability-weighted standardization estimator.
+
+The covariance matrix accounts for estimation of both the outcome model and the observation model. This covariance is then used in:
+
+1. the MCP step, for optimal contrast testing and multiplicity adjustment;
+2. the Mod step, for generalized least-squares fitting and model averaging.
+
+When there is no missingness, the method reduces to a complete-data covariate-adjusted MCP-Mod analysis.
+
+When no covariates are supplied, the method reduces to an unadjusted generalized MCP-Mod analysis.
+
+---
+
+<a id="citation"></a>
+
+## 📚 Citation
+
+If you use `MCPModX`, please cite the MCP-ModX manuscript.
+
+Citation details will be added when the manuscript or preprint is publicly available.
