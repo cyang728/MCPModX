@@ -1,23 +1,12 @@
+#' MCPModX: MCP-Mod with model-assisted covariate adjustment under missing outcomes
+#'
+#' Extends the Multiple Comparison Procedure and Modelling (MCP-Mod) framework
+#' for dose-finding with model-assisted covariate adjustment and handling of
+#' outcomes that are missing at random, via inverse-probability-weighted
+#' g-computation / AIPW with stacked-sandwich (M-estimation) inference.
+#'
 #' @keywords internal
+#' @importFrom stats as.formula binomial cov2cor delete.response fitted gaussian
+#'   glm model.matrix optimize pnorm predict qnorm setNames terms
+#' @importFrom mvtnorm qmvnorm pmvnorm
 "_PACKAGE"
-
-## usethis namespace: start
-#' @importFrom boot logit
-#' @importFrom DoseFinding fitMod
-#' @importFrom DoseFinding gAIC
-#' @importFrom DoseFinding Mods
-#' @importFrom DoseFinding mvtnorm.control
-#' @importFrom DoseFinding optContr
-#' @importFrom DoseFinding MCTpval
-#' @importFrom MASS ginv
-#' @importFrom mvtnorm qmvt
-#' @importFrom stats as.formula
-#' @importFrom stats binomial
-#' @importFrom stats cov
-#' @importFrom stats cov2cor
-#' @importFrom stats glm
-#' @importFrom stats predict
-#' @importFrom stats var
-#' @importFrom stats vcov
-## usethis namespace: end
-NULL

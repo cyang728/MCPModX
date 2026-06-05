@@ -2,44 +2,76 @@
 % Please edit documentation in R/MCPModX.R
 \name{MCPModX}
 \alias{MCPModX}
-\title{MCPModX: Modified MCPMod for Binary Outcomes with Covariates}
+\title{MCP-ModX: covariate-adjusted MCP-Mod under missing outcomes}
 \usage{
 MCPModX(
   data,
-  covariates = "x_star",
-  family = binomial(link = "logit"),
-  gauss_models = Mods(linear = NULL, emax = c(0.05, 0.2, 0.5), quadratic = -0.85, doses =
-    unique(data$dose)),
-  estimand = c("logOR", "RD", "logRR"),
+  outcome,
+  dose,
+  models,
+  covariates = NULL,
+  obs_covariates = NULL,
+  family = stats::binomial(),
   alpha = 0.05,
-  bnds = c(0, 2)
+  variance = c("sandwich", "oracle"),
+  mod = TRUE
 )
 }
 \arguments{
-\item{data}{A data frame containing the variables \code{dose}, \code{y}, and any covariates specified.}
+\item{data}{a data frame.}
 
-\item{covariates}{A character vector of covariate names to include in the model. Default is "x_star".}
+\item{outcome}{name of the outcome column; missing values coded \code{NA}.}
 
-\item{family}{A family for generalized linear model with different outcomes}
+\item{dose}{name of the numeric dose column (placebo is the smallest value).}
 
-\item{gauss_models}{A list of models for the dose-response relationship. Default includes linear, emax, and quadratic models.}
+\item{models}{named list of candidate shapes and guesstimates passed to
+\code{\link{build_models}}, e.g.
+\code{list(linear = NULL, emax = c(0.05, 0.2, 0.5), quadratic = -0.85)}.}
 
-\item{estimand}{A character string specifying the type of measure to estimate.
-Options are "logOR" (log Odds Ratio), "RD" (Risk Difference), and "logRR" (log Risk Ratio).
-Default is "logOR".}
+\item{covariates}{character vector of outcome-model adjustment covariates, or
+\code{NULL} for the unadjusted (generalised MCP-Mod) analysis.}
 
-\item{alpha}{Significance level for the test. Default is 0.05.}
+\item{obs_covariates}{character vector of observation-model covariates used
+for the IPW propensity, or \code{NULL} for complete-case / complete-data.}
 
-\item{bnds}{A numeric vector specifying the bounds for the optimization. Default is c(0, 0.2).}
+\item{family}{a \code{\link[stats]{family}}: \code{binomial()} (default,
+marginal log-odds estimand) or \code{gaussian()} (mean-difference estimand).}
+
+\item{alpha}{family-wise type-I error for the MCP step.}
+
+\item{variance}{\code{"sandwich"} (default, Theorem 3.3) or \code{"oracle"}
+(the eq. 3.20 plug-in, for comparison).}
+
+\item{mod}{logical; run the Mod step (default \code{TRUE}).}
 }
 \value{
-A list containing the significant tests and the generalized weighted AIC fitted values.
+an object of class \code{"MCPModX"}: a list with \code{mu} (marginal
+  means), \code{delta} and \code{Sigma_delta} (placebo-adjusted contrasts and
+  their covariance), \code{mcp} (test result), \code{mod} (model-averaging
+  result), and the candidate-shape matrix \code{models}.
 }
 \description{
-This function performs MCPMod analysis with model-assisted variance for generalized outcomes such as binary and count.
+Fits the model-assisted MCP-Mod analysis of a dose-finding trial.  Marginal
+arm means are estimated by inverse-probability-weighted g-computation / AIPW
+(handling outcomes missing at random), inference uses the stacked-sandwich
+covariance (Theorem 3.3), the MCP step performs the optimal-contrast test
+with a multiplicity-adjusted critical value, and the Mod step model-averages
+the candidate dose-response shapes by generalised AIC.
 }
 \examples{
-# Example usage:
-# Assuming `dat` is your dataset with `dose`, `y`, and covariates
-# result <- MCPModX(data = dat, covariates = "x_star")
+data(sim_dat)
+
+## unadjusted, complete-case (generalised MCP-Mod)
+MCPModX(sim_dat, outcome = "y", dose = "dose",
+        models = list(linear = NULL, emax = c(0.05, 0.2), quadratic = -0.85))
+
+## covariate-adjusted with inverse-probability weighting for the missing
+## outcomes (the sandwich variance is used by default)
+fit <- MCPModX(sim_dat, outcome = "y", dose = "dose",
+               models = list(linear = NULL, emax = c(0.05, 0.2), quadratic = -0.85),
+               covariates = c("x1", "x2", "x3"),
+               obs_covariates = c("x1", "x2"))
+fit
+fit$delta            # placebo-adjusted contrasts
+fit$mod$curve        # model-averaged dose-response curve
 }

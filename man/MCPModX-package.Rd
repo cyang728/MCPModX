@@ -3,9 +3,12 @@
 \docType{package}
 \name{MCPModX-package}
 \alias{MCPModX-package}
-\title{MCPModX: What the Package Does (One Line, Title Case)}
+\title{MCPModX: MCP-Mod with model-assisted covariate adjustment under missing outcomes}
 \description{
-What the package does (one paragraph).
+Extends the Multiple Comparison Procedure and Modelling (MCP-Mod) framework
+for dose-finding with model-assisted covariate adjustment and handling of
+outcomes that are missing at random, via inverse-probability-weighted
+g-computation / AIPW with stacked-sandwich (M-estimation) inference.
 }
 \seealso{
 Useful links:
@@ -16,7 +19,12 @@ Useful links:
 
 }
 \author{
-\strong{Maintainer}: Cheng-Han Yang \email{cheng.han.yang@uth.tmc.edu} (\href{https://orcid.org/0000-0002-4161-3140}{ORCID})
+\strong{Maintainer}: Cheng-Han Yang \email{bingo82728@gmail.com}
+
+Authors:
+\itemize{
+  \item Ruitao Lin \email{rlin@mdanderson.org}
+}
 
 }
 \keyword{internal}
